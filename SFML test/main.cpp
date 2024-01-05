@@ -1,8 +1,9 @@
-#include "includes.h"
+﻿#include "includes.h"
 
 int velocity = 5;
 int score_p1 = 0;
 int score_p2 = 0;
+int movement = 20;
 
 DWORD WINAPI movement_Handler(LPVOID parameter)
 {
@@ -11,12 +12,12 @@ DWORD WINAPI movement_Handler(LPVOID parameter)
 		if (GetKeyState(VK_UP) & 0x8000)
 		{
 			Sleep(20);
-			line.setPosition(line.getPosition().x, line.getPosition().y - 20);
+			line.setPosition(line.getPosition().x, line.getPosition().y - movement);
 		}
 		if (GetKeyState(VK_DOWN) & 0x8000)
 		{
 			Sleep(20);
-			line.setPosition(line.getPosition().x, line.getPosition().y + 20);
+			line.setPosition(line.getPosition().x, line.getPosition().y + movement);
 		}
 
 		try {
@@ -27,6 +28,7 @@ DWORD WINAPI movement_Handler(LPVOID parameter)
 		}
 		catch (std::exception e)
 		{
+			std::cout << "なぜこんなことになったのか？";
 		}
 	}
 	return 0;
@@ -39,12 +41,12 @@ DWORD WINAPI movement_Handler_2(LPVOID parameter)
 		if (GetKeyState(0x57) & 0x8000)
 		{
 			Sleep(20);
-			line2.setPosition(line2.getPosition().x, line2.getPosition().y - 20);
+			line2.setPosition(line2.getPosition().x, line2.getPosition().y - movement);
 		}
 		if (GetKeyState(0x53) & 0x8000)
 		{
 			Sleep(20);
-			line2.setPosition(line2.getPosition().x, line2.getPosition().y + 20);
+			line2.setPosition(line2.getPosition().x, line2.getPosition().y + movement);
 		}
 
 		try {
@@ -83,6 +85,7 @@ DWORD WINAPI ball_Handler(LPVOID parameter)
 			right = true;
 			ball.setPosition(ball.getPosition().x + velocity, ball.getPosition().y);
 			velocity += random() % 2;
+			movement += 1;
 		}
 
 		if (ball.getGlobalBounds().intersects(line2.getGlobalBounds()))
@@ -90,6 +93,7 @@ DWORD WINAPI ball_Handler(LPVOID parameter)
 			right = false;
 			ball.setPosition(ball.getPosition().x - velocity, ball.getPosition().y);
 			velocity += random() % -2;
+			movement += 1;
 		}
 		switch (right)
 		{
@@ -127,6 +131,7 @@ DWORD WINAPI game_Handler(LPVOID parameter)
 			score2.setString(std::to_string(score_p2));
 			Sleep(3000);
 			velocity = 5;
+			movement = 20;
 		}
 		if (ball.getPosition().x >= line2.getPosition().x + 100)
 		{
@@ -136,6 +141,7 @@ DWORD WINAPI game_Handler(LPVOID parameter)
 			score1.setString(std::to_string(score_p1));
 			Sleep(3000);
 			velocity = 5;
+			movement = 20;
 		}
 	}
 	return 0;
@@ -148,7 +154,10 @@ int main()
 	score1.setFont(font);
 	score2.setFont(font);
 
+	// Window information
 	sf::RenderWindow window(sf::VideoMode(1200, 900), "Unloved ");
+
+	// Render properties
 	line.setRotation(90);
 	line.setPosition(100, 100);
 	line2.setRotation(90);
@@ -168,10 +177,12 @@ int main()
 	score2.setString(std::to_string(score_p2));
 
 	CreateThread(NULL, 0, movement_Handler, NULL, 0, NULL); // Create thread for movement_Handler function
-	CreateThread(NULL, 0, movement_Handler_2, NULL, 0, NULL); // Create thread for movement_Handler function
-	CreateThread(NULL, 0, ball_Handler, NULL, 0, NULL); // Create thread for movement_Handler function
-	CreateThread(NULL, 0, game_Handler, NULL, 0, NULL); // Create thread for movement_Handler function
+	CreateThread(NULL, 0, movement_Handler_2, NULL, 0, NULL); // Create thread for movement_Handler2 function
+	CreateThread(NULL, 0, ball_Handler, NULL, 0, NULL); // Create thread for ball_Handler function
+	CreateThread(NULL, 0, game_Handler, NULL, 0, NULL); // Create thread for game_Handler function
 
+
+	// Start the Window
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -182,13 +193,13 @@ int main()
 		}
 
 		window.clear();
+
 		// Players
 		window.draw(line);
 		window.draw(line2);
 
 		// Ball
 		window.draw(ball);
-
 
 		// Score
 		window.draw(score1);
